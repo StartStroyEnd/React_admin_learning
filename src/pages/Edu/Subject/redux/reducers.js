@@ -13,12 +13,7 @@ export default function subjectList(prevState = initSubjectList, action) {
       });
       return action.data;
     case GET_SEC_SUBJECT_LIST:
-      // 修改数据，添加到redux中
-      // action.data可以获取到对应的一级课程分类的所有二级课程分类
-      // action 返回的是一个对象，total和items，items是我们要使用的二级课程数据
       const SecItems = action.data.items;
-
-      console.log(SecItems);
 
       const PrevItems = prevState.items;
 
@@ -28,6 +23,7 @@ export default function subjectList(prevState = initSubjectList, action) {
             item.children = SecItems;
           }
         });
+
       return {
         ...prevState,
         items: PrevItems,

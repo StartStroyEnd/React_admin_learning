@@ -68,7 +68,10 @@ const data = [
   },
 ];
 
-@connect((state) => ({ subjectList: state.subjectList }), { getSubjectList,getSecSubjectList })
+@connect((state) => ({ subjectList: state.subjectList }), {
+  getSubjectList,
+  getSecSubjectList,
+})
 class Subject extends Component {
   componentDidMount() {
     this.props.getSubjectList(1, 10);
@@ -80,7 +83,7 @@ class Subject extends Component {
   //   this.props.getSubjectList(page, limit);
   // };
   // getSecSubjectList
-  expandHandle = (expanded, record) => {
+  handleExpand = (expanded, record) => {
     if (expanded) {
       this.props.getSecSubjectList(record._id);
     }
@@ -99,7 +102,7 @@ class Subject extends Component {
             //   <p style={{ margin: 0 }}>{record.description}</p>
             // ),
             // rowExpandable: (record) => record.name !== "Not Expandable",
-            onExpand: this.expandHandle,
+            onExpand: this.handleExpand,
           }}
           dataSource={this.props.subjectList.items}
           rowKey={"_id"}

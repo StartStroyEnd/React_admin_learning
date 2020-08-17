@@ -11,7 +11,8 @@ export function reqGetSubject(page, limit) {
 }
 
 // http://localhost:5000/admin/edu/subject/get/:parentId
-
+// 获取一级分类ID所对应的二级ID列表请求
+// 导出至外层redux中的请求包中，在utils下的request中去发送请求。
 export function reqSecGetSubject(parentId) {
   return request({
     url: `${BASE_URL}/get/${parentId}`,
