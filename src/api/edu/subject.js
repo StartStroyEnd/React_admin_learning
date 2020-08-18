@@ -19,3 +19,38 @@ export function reqSecGetSubject(parentId) {
     method: "GET",
   });
 }
+
+// http://localhost:5000/admin/edu/subject/save
+
+// 发送添加课程分类请求
+export function reqAddSubject(title, parentId) {
+  return request({
+    url: `${BASE_URL}/save`,
+    method: "POST",
+    data: {
+      title,
+      parentId,
+    },
+  });
+}
+
+// http://localhost:5000/admin/edu/subject/remove/:id
+// 发送删除课程分类
+
+export function reqDelSubject(id) {
+  return request({
+    url: `${BASE_URL}/remove/${id}`,
+    method: "DELETE",
+  });
+}
+// http://localhost:5000/admin/edu/subject/update
+export function reqUpdateSubject(id, title) {
+  return request({
+    url: `${BASE_URL}/update`,
+    method: "PUT",
+    data: {
+      id,
+      title,
+    },
+  });
+}
