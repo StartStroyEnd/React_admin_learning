@@ -43,6 +43,8 @@ export function reqDelSubject(id) {
     method: "DELETE",
   });
 }
+
+// 更新课程分类
 // http://localhost:5000/admin/edu/subject/update
 export function reqUpdateSubject(id, title) {
   return request({
@@ -54,3 +56,4 @@ export function reqUpdateSubject(id, title) {
     },
   });
 }
+
