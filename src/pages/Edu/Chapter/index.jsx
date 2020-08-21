@@ -101,6 +101,11 @@ class Chapter extends Component {
     }
   };
 
+  // 点击跳转到新增课时页面
+  addLessonHandle = (data) => () => {
+    this.props.history.push("/edu/chapter/addLesson", data);
+  };
+
   render() {
     const { previewVisible, previewImage, selectedRowKeys } = this.state;
 
@@ -133,7 +138,8 @@ class Chapter extends Component {
           return (
             <div>
               <Tooltip title="新增课时">
-                <Button type="primary">
+                {/* 这里的data就包含了当前项的id */}
+                <Button type="primary" onClick={this.addLessonHandle(data)}>
                   <PlusOutlined />
                 </Button>
               </Tooltip>

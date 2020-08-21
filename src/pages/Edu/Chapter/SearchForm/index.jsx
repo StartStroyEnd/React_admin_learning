@@ -45,7 +45,7 @@ function SearchForm(props) {
           type="primary"
           htmlType="submit"
           style={{ margin: "0 10px 0 30px" }}
-          onClick={searchAllCourseList}
+          // onClick={searchAllCourseList}
         >
           查询课程章节
         </Button>
