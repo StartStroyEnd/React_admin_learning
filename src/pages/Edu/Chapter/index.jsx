@@ -17,7 +17,13 @@ import { connect } from "react-redux";
 import SearchForm from "./SearchForm";
 
 import "./index.less";
-import { getLessonList } from "./redux";
+import { getLessonList, delChapterList, delLessonList } from "./redux";
+
+// 导入知乎的弹出框视频
+import Player from "griffith";
+
+// 导入全屏插件
+import screenfull from "screenfull";
 
 dayjs.extend(relativeTime);
 
@@ -31,7 +37,7 @@ dayjs.extend(relativeTime);
 
     chapterList: state.chapterList.chapterList,
   }),
-  { getLessonList }
+  { getLessonList, delChapterList, delLessonList }
   // { getcourseList }
 )
 class Chapter extends Component {
@@ -40,6 +46,7 @@ class Chapter extends Component {
     previewVisible: false,
     previewImage: "",
     selectedRowKeys: [],
+    play_url: "",
   };
 
   showImgModal = (img) => {
@@ -90,6 +97,7 @@ class Chapter extends Component {
 
   onSelectChange = (selectedRowKeys) => {
     this.setState({
+      // 存储的是当前选中项的唯一标识，按点击顺序存储
       selectedRowKeys,
     });
   };
@@ -104,6 +112,49 @@ class Chapter extends Component {
   // 点击跳转到新增课时页面
   addLessonHandle = (data) => () => {
     this.props.history.push("/edu/chapter/addLesson", data);
+  };
+
+  // 点击预览按钮，展图片
+  handlePreviewVideo = (record) => () => {
+    this.setState({
+      previewVisible: true,
+      // 保存当前项的视频地址到state对象中
+      play_url: record.video,
+    });
+  };
+
+  // 批量删除的回调
+  handleBatchRemove = async () => {
+    // 1、从selectedRowKeys中去找到哪些是章节，哪些是课时的标识
+    // 2、遍历所有项（章节标识），从selectedRowKeys去查找当前是否有标识存在于所有章节中，那个这标识就是章节ID
+    // 拿到所有章节数据后，遍历章节，
+
+    // 创建一个数组用来存储要删除的章节或者课时id
+    const chapterIdList = [];
+
+    // 遍历redux中的所有章节标识_id
+    this.props.chapterList.forEach((item) => {
+      // 判断当前存储到selectedRowKeys里的所有标识，是否是章节ID
+      // 是的话则过滤掉，返回一个新数组
+      if (this.state.selectedRowKeys.indexOf(item._id) > -1) {
+        // 往临时数组中添加选中的章节项标识
+        chapterIdList.push(item._id);
+      }
+    });
+
+    // 课时判断
+    // 将要删除的课时，存放到一个新的数组
+    // 再次遍历当前选中的所有的标识中是否存在于章节标识下，若存在则过滤掉
+    const lessonIdList = this.state.selectedRowKeys.filter((item) => {
+      if (chapterIdList.indexOf(item) > -1) {
+        return false;
+      }
+      return true;
+    });
+
+    await this.props.delChapterList(chapterIdList);
+    await this.props.delLessonList(lessonIdList);
+    message.success("批量删除成功！");
   };
 
   render() {
@@ -124,8 +175,15 @@ class Chapter extends Component {
       {
         title: "视频",
         // dataIndex: "",
-        render: (isFree) => {
-          return "预览视频";
+        render: (record) => {
+          if (record.free) {
+            return (
+              <Button onClick={this.handlePreviewVideo(record)}>
+                预览视频
+              </Button>
+            );
+          }
+          return null;
         },
       },
       {
@@ -159,117 +217,21 @@ class Chapter extends Component {
       },
     ];
 
-    // const data = [
-    //   {
-    //     id: "111",
-    //     title: "第一章节",
-    //     children: [
-    //       {
-    //         id: "1",
-    //         title: "第一课时",
-    //         free: false,
-    //         videoSourceId: "756cf06db9cb4f30be85a9758b19c645",
-    //       },
-    //       {
-    //         id: "2",
-    //         title: "第二课时",
-    //         free: true,
-    //         videoSourceId: "2a02d726622f4c7089d44cb993c531e1",
-    //       },
-    //       {
-    //         id: "3",
-    //         title: "第三课时",
-    //         free: true,
-    //         videoSourceId: "4e560c892fdf4fa2b42e0671aa42fa9d",
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     id: "222",
-    //     title: "第二章节",
-    //     children: [
-    //       {
-    //         id: "4",
-    //         title: "第一课时",
-    //         free: false,
-    //         videoSourceId: "756cf06db9cb4f30be85a9758b19c645",
-    //       },
-    //       {
-    //         id: "5",
-    //         title: "第二课时",
-    //         free: true,
-    //         videoSourceId: "2a02d726622f4c7089d44cb993c531e1",
-    //       },
-    //       {
-    //         id: "6",
-    //         title: "第三课时",
-    //         free: true,
-    //         videoSourceId: "4e560c892fdf4fa2b42e0671aa42fa9d",
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     id: "333",
-    //     title: "第三章节",
-    //     children: [
-    //       {
-    //         id: "1192252824606289921",
-    //         title: "第一课时",
-    //         free: false,
-    //         videoSourceId: "756cf06db9cb4f30be85a9758b19c645",
-    //       },
-    //       {
-    //         id: "1192628092797730818",
-    //         title: "第二课时",
-    //         free: true,
-    //         videoSourceId: "2a02d726622f4c7089d44cb993c531e1",
-    //       },
-    //       {
-    //         id: "1192632495013380097",
-    //         title: "第三课时",
-    //         free: true,
-    //         videoSourceId: "4e560c892fdf4fa2b42e0671aa42fa9d",
-    //       },
-    //     ],
-    //   },
-    // ];
-
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
-      // hideDefaultSelections: true,
-      // selections: [
-      //   Table.SELECTION_ALL,
-      //   Table.SELECTION_INVERT,
-      //   {
-      //     key: "odd",
-      //     text: "Select Odd Row",
-      //     onSelect: changableRowKeys => {
-      //       let newSelectedRowKeys = [];
-      //       newSelectedRowKeys = changableRowKeys.filter((key, index) => {
-      //         if (index % 2 !== 0) {
-      //           return false;
-      //         }
-      //         return true;
-      //       });
-      //       this.setState({ selectedRowKeys: newSelectedRowKeys });
-      //     }
-      //   },
-      //   {
-      //     key: "even",
-      //     text: "Select Even Row",
-      //     onSelect: changableRowKeys => {
-      //       let newSelectedRowKeys = [];
-      //       newSelectedRowKeys = changableRowKeys.filter((key, index) => {
-      //         if (index % 2 !== 0) {
-      //           return true;
-      //         }
-      //         return false;
-      //       });
-      //       this.setState({ selectedRowKeys: newSelectedRowKeys });
-      //     }
-      //   }
-      // ]
+    };
+
+    const sources = {
+      hd: {
+        play_url: this.state.play_url,
+        bitrate: 1,
+        duration: 1000,
+        format: "",
+        height: 500,
+        size: 160000,
+        width: 500,
+      },
     };
 
     return (
@@ -285,11 +247,22 @@ class Chapter extends Component {
                 <PlusOutlined />
                 <span>新增</span>
               </Button>
-              <Button type="danger" style={{ marginRight: 10 }}>
+              <Button
+                type="danger"
+                style={{ marginRight: 10 }}
+                onClick={this.handleBatchRemove}
+              >
                 <span>批量删除</span>
               </Button>
               <Tooltip title="全屏" className="course-table-btn">
-                <FullscreenOutlined />
+                <FullscreenOutlined
+                  onClick={() => {
+                    // 点击全屏按钮触发全屏，再次点击无效，必须移动到屏幕上方点x
+                    // screenfull.request();
+                    // 再次点击全屏按钮关闭全屏
+                    screenfull.toggle();
+                  }}
+                />
               </Tooltip>
               <Tooltip title="刷新" className="course-table-btn">
                 <RedoOutlined />
@@ -299,6 +272,7 @@ class Chapter extends Component {
               </Tooltip>
             </div>
           </div>
+          {/* 这个组件是显示当前已经选择了多少项的组件 */}
           <Alert
             message={
               <span>
@@ -312,6 +286,7 @@ class Chapter extends Component {
             style={{ marginBottom: 20 }}
           />
           <Table
+            // rowSelection为当前点击以后的单选框
             rowSelection={rowSelection}
             columns={columns}
             dataSource={this.props.chapterList}
@@ -324,11 +299,24 @@ class Chapter extends Component {
         </div>
 
         <Modal
+          // 直接使用这个modal去预览视频
           visible={previewVisible}
           footer={null}
           onCancel={this.handleImgModal}
+          // 关闭弹出框以后，视频将不再后台运行
+          // Modal关闭时，销毁子节点！
+          destroyOnClose={true}
+          // 添加title属性解决模态框弹出的关闭按钮被遮掩问题
+          title="预览"
         >
-          <img alt="example" style={{ width: "100%" }} src={previewImage} />
+          <Player
+            sources={sources}
+            id={"1"}
+            cover={"http://localhost:3000/logo512.png"}
+            duration={1000}
+          ></Player>
+
+          {/* <img alt="example" style={{ width: "100%" }} src={previewImage} /> */}
         </Modal>
       </div>
     );

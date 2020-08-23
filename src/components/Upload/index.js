@@ -22,6 +22,9 @@ export default class MyUpload extends Component {
       this.tokenObj = JSON.parse(jsonStr);
     }
     this.tokenObj = {};
+    this.state = {
+      isShowUploader: true,
+    };
   }
 
   // 上传之前的钩子函数,主要获取的是从当前本地服务器从七牛云中获取到的tonken
@@ -106,6 +109,12 @@ export default class MyUpload extends Component {
         // 手动实现：
         // res中的key属性则是当前修改后的文件名，而这个文件名又是通过nanoid进行转换的
         this.props.onChange(`http://qfeho9xkb.hn-bkt.clouddn.com/${res.key}`);
+
+        message.success("上传成功！");
+        // 上传完成以后，隐藏上传视频按钮，让其
+        this.setState({
+          isShowUploader: false,
+        });
       },
     };
     // 要上传的文件对象
@@ -120,7 +129,7 @@ export default class MyUpload extends Component {
       region: qiniu.region.z2,
     };
     const putExtra = {
-      // 设置上传文件的格式，当前设置为所有类型的视频
+      // 设置上传文件的格式，当前设置为所有类型的视频<后端控制>
       mimeType: "video/*",
     };
 
@@ -136,8 +145,18 @@ export default class MyUpload extends Component {
 
   // 撤销视频添加提交表单：
   handleRemove = () => {
-    this.props.onChange("")
-  }
+    console.dir(this.props.action);
+    // this.props.onChange("");
+
+    // if(this.props.onChange()){
+
+    // }
+
+    // 当撤销当前上传时，显示上传按钮
+    this.setState({
+      isShowUploader: true,
+    });
+  };
 
   render() {
     return (
@@ -146,10 +165,14 @@ export default class MyUpload extends Component {
         customRequest={this.handleCustomRequest}
         // 当删除上传视频的时候触发
         onRemove={this.handleRemove}
+        // 前端控制其上传文件的格式
+        accept="video/*"
       >
-        <Button>
-          <UploadOutlined /> 点击上传视频
-        </Button>
+        {this.state.isShowUploader && (
+          <Button>
+            <UploadOutlined /> 点击上传视频
+          </Button>
+        )}
       </Upload>
     );
   }

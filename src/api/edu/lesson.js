@@ -34,3 +34,15 @@ export function addLesson({ chapterId, title, free, video }) {
     },
   });
 }
+
+// 批量删除课时
+// http://localhost:5000/admin/edu/lesson/batchRemove
+export function reqBatchRemoveLessonList(lessonIdList) {
+  return request({
+    url: `${BASE_URL}/batchRemove`,
+    method: "DELETE",
+    data: {
+      idList: lessonIdList,
+    },
+  });
+}
