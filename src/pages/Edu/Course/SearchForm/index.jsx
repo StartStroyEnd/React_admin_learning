@@ -5,12 +5,21 @@ import { Form, Input, Select, Cascader, Button } from "antd";
 import { reqAllSubjectList, reqSecGetSubject } from "@api/edu/subject";
 // 导入获取所有讲师列表
 import { reqGetAllTeacherList } from "@api/edu/teacher";
+
+import { connect } from "react-redux";
+import { getAllCourseList } from "../redux";
+
+// 导入国际化应用到当前组件
+// 以及hooks：
+import { FormattedMessage, useIntl } from "react-intl";
+
 import "./index.less";
 
 const { Option } = Select;
 
-function SearchForm() {
+function SearchForm(props) {
   const [form] = Form.useForm();
+  const intl = useIntl();
 
   //使用useState来存储数据
   // 注意作用域范围，当前写在最外层作用域，则内部函数都可以使用
@@ -44,7 +53,7 @@ function SearchForm() {
           value: item._id,
           // value 相当于请求回来的数据中的title
           label: item.title,
-          // value 相当于请求回来的数据中有无二级数据，true为有，false为无
+          // value 相当于请求回来的数据中有无二级数据，true为无，false为有
           isLeaf: false,
         };
       });
@@ -78,6 +87,7 @@ function SearchForm() {
   const loadData = async (selectedOptions) => {
     // selectedOptions记录了所有你点击的多级数组数据,1-2-3
     // selectedOptions[selectedOptions.length - 1]最终级的数据即为最终级的下一级所需要查找的数据
+    // 数据格式： [ {一级}, {二级} ,....]
     const targetOption = selectedOptions[selectedOptions.length - 1];
 
     // 加载效果！
@@ -132,20 +142,32 @@ function SearchForm() {
     form.resetFields();
   };
 
+  //查询课程列表的事件处理函数
+  const onFinish = () => {
+    props.getAllCourseList();
+  };
+
   return (
-    <Form layout="inline" form={form}>
-      <Form.Item name="title" label="标题">
-        <Input placeholder="课程标题" style={{ width: 250, marginRight: 20 }} />
+    <Form layout="inline" form={form} onFinish={onFinish}>
+      <Form.Item name="title" label={<FormattedMessage id="title" />}>
+        <Input
+          placeholder={intl.formatMessage({
+            id: "title",
+          })}
+          style={{ width: 250, marginRight: 20 }}
+        />
       </Form.Item>
-      <Form.Item name="teacherId" label="讲师">
+      <Form.Item name="teacherId" label={<FormattedMessage id="teacher" />}>
         <Select
           allowClear
-          placeholder="课程讲师"
+          placeholder={intl.formatMessage({
+            id: "teacher",
+          })}
           style={{ width: 250, marginRight: 20 }}
         >
           {/* 动态渲染当前的数据 */}
           {teachers.map((item) => (
-            <Option key={item._id} value="item._id">
+            <Option key={item._id} value={item._id}>
               {item.name}
             </Option>
           ))}
@@ -154,7 +176,7 @@ function SearchForm() {
           {/* <Option value="lucy3">Lucy3</Option> */}
         </Select>
       </Form.Item>
-      <Form.Item name="subject" label="分类">
+      <Form.Item name="subject" label={<FormattedMessage id="subject" />}>
         <Cascader
           style={{ width: 250, marginRight: 20 }}
           options={options}
@@ -165,12 +187,15 @@ function SearchForm() {
           // 当changeOnSelect的值为true时，只要点击了多级联动，就会触发onChnage
           // 为false时，只有选中以后才能触发
           // changeOnSelect ={true}
-          placeholder="课程分类"
+          placeholder={intl.formatMessage({
+            id: "subject",
+          })}
         />
       </Form.Item>
       <Form.Item>
         <Button
           type="primary"
+          // 证明htmlType=》Form处可以写入onFinish
           htmlType="submit"
           style={{ margin: "0 10px 0 30px" }}
         >
@@ -182,4 +207,4 @@ function SearchForm() {
   );
 }
 
-export default SearchForm;
+export default connect(null, { getAllCourseList })(SearchForm);

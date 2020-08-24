@@ -9,7 +9,11 @@ import { roleList } from "@pages/Acl/Role/redux";
 import { menuList } from "@pages/Acl/Permission/redux";
 import { subjectList } from "@pages/Edu/Subject/redux";
 import { chapterList } from "@pages/Edu/Chapter/redux";
+import { courseList } from "@pages/Edu/Course/redux";
+// 国际化redux，reducer引入
+import intl from "./intl";
 
+// 导出
 export default combineReducers({
   loading,
   user,
@@ -19,4 +23,6 @@ export default combineReducers({
   menuList,
   subjectList,
   chapterList,
+  courseList,
+  intl,
 });
