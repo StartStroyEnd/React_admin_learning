@@ -1,49 +1,24 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-
-import Loading from "../Loading";
-import { getAccessRoutes, getUserInfo } from "./redux";
-import { updateLoading } from "@redux/actions/loading";
+import { getUserInfo, getUserMenu } from "./redux";
 
 @connect(
-  (state) => ({
-    user: state.user,
-    loading: state.loading,
-  }),
-  { getAccessRoutes, getUserInfo, updateLoading }
+  (state) => (
+    {
+      user: state.user,
+    },
+    { getUserInfo, getUserMenu }
+  )
 )
 class Authorized extends Component {
-  componentDidMount() {
-    // 发送请求，请求roles和permissionList
-    const {
-      user: { roles, permissionList },
-      getUserInfo,
-      getAccessRoutes,
-      updateLoading,
-    } = this.props;
-    
-    const promises = [];
-
-    if (!roles.length) {
-      promises.push(getUserInfo());
-    }
-
-    if (!permissionList.length) {
-      promises.push(getAccessRoutes());
-    }
-
-    Promise.all(promises).finally(() => {
-      updateLoading(false);
-    });
+  async componentDidMount() {
+    // 挂载后发送请求
+    await Promise.all([this.props.getUserInfo(), this.props.getUserMenu()]);
   }
 
   render() {
-    const {
-      user: { permissionList },
-      render,
-    } = this.props;
-
-    return <Loading>{render(permissionList)}</Loading>;
+    // 通过redux传递到组件以后从中获取到（在index的render函数中，Authorized的render参数传递给PrimaryLayout组件的，都可通过props获取）
+    return this.props.render(this.props.user);
   }
 }
 

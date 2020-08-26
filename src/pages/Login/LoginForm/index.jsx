@@ -12,9 +12,10 @@ import {
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 
-import { login } from "@redux/actions/login";
+import { login, mobilelogin } from "@redux/actions/login";
 
 // 获取验证码
+// 手机登录
 import { reqGetVerifyCode } from "@api/acl/oauth";
 
 import "./index.less";
@@ -54,6 +55,10 @@ const validator = (rule, value) => {
   });
 };
 
+// 记录tab选中的是谁
+// 若写在函数组件内，组件重新渲染时，tabFlag将会更改
+let tabFlag = "user";
+
 function LoginForm(props) {
   // form从数组中解构出来的
   const [form] = Form.useForm();
@@ -64,24 +69,40 @@ function LoginForm(props) {
   //   const form = Form.useForm();
   // }
 
-  const onFinish = ({ username, password }) => {
-    props.login(username, password).then((token) => {
-      // 登录成功
-      // console.log("登录成功~");
-      // 持久存储token
-      localStorage.setItem("user_token", token);
-      props.history.replace("/");
-    });
-    // .catch(error => {
-    //   notification.error({
-    //     message: "登录失败",
-    //     description: error
-    //   });
-    // });
+  // 监听tab切换的时间处理函数
+  const handleTabChange = (key) => {
+    tabFlag = key;
   };
+
   // 验证码发送成功以后倒计时
   let [downCount, setDownCount] = useState(5);
   let [isShowBtn, setIsShowBtn] = useState(true);
+
+  const onFinish = () => {
+    // 判断当前是用户密码登录还是手机登录
+    // 根据判断的结果来验证对应的表单项
+    // 校验通过，根据判断去调用对应的借口发送请求，实现登录
+    if (tabFlag === "user") {
+      form.validateFields(["username", "password"]).then((res) => {
+        const { username, password } = res;
+        props.login(username, password).then((token) => {
+          // 登录成功！
+          // 存储token
+          localStorage.setItem("user_token", token);
+          props.history.replace("/");
+        });
+      });
+    } else {
+      form.validateFields(["phone", "verify"]).then((res) => {
+        const { phone, verify } = res;
+        props.mobilelogin(phone, verify).then((token) => {
+          // 登录成功
+          localStorage.setItem("user_token", token);
+          props.history.replace("/");
+        });
+      });
+    }
+  };
 
   // 获取验证码的时间处理函数！
   const handleGetCode = () => {
@@ -111,9 +132,16 @@ function LoginForm(props) {
           }
         }, 1000);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+  };
+
+  // git第三方登录
+  const oauthLogin = () => {
+    // 浏览器给服务器发送请求，获取code
+    // 我的client_id  : 39493e47b39a73705233
+    // 给location.href赋值为一个url时，会根据url发送请求
+    // 并且只要是地址栏发的请求
+    window.location.href =
+      "https://github.com/login/oauth/authorize?client_id=39493e47b39a73705233";
   };
 
   return (
@@ -122,12 +150,14 @@ function LoginForm(props) {
         name="normal_login"
         className="login-form"
         initialValues={{ remember: true }}
-        onFinish={onFinish}
+        // onFinish={onFinish}
         form={form}
       >
         <Tabs
           defaultActiveKey="user"
           tabBarStyle={{ display: "flex", justifyContent: "center" }}
+          // 监听
+          onChange={handleTabChange}
         >
           <TabPane tab="账户密码登录" key="user">
             <Form.Item
@@ -192,7 +222,19 @@ function LoginForm(props) {
 
             <Row justify="space-between">
               <Col span={16}>
-                <Form.Item name="verify">
+                <Form.Item
+                  name="verify"
+                  rules={[
+                    {
+                      required: true,
+                      message: "请输入验证码",
+                    },
+                    {
+                      pattern: /^[\d]{6}$/,
+                      message: "验证码为6位数字",
+                    },
+                  ]}
+                >
                   <Input
                     prefix={<MailOutlined className="form-icon" />}
                     placeholder="验证码"
@@ -225,11 +267,12 @@ function LoginForm(props) {
         <Form.Item>
           <Button
             type="primary"
-            // 用户登录和手机登录用的都是同一个登录按钮. 
+            // 用户登录和手机登录用的都是同一个登录按钮.
             // 但是登录时,需要分开处理是用户登录还是手机登录
             // 所以要把登录按钮的htmlType='submit'去掉
             // htmlType="submit"
             className="login-form-button"
+            onClick={onFinish}
           >
             登录
           </Button>
@@ -239,7 +282,7 @@ function LoginForm(props) {
             <Col span={16}>
               <span>
                 其他登录方式
-                <GithubOutlined className="login-icon" />
+                <GithubOutlined className="login-icon" onClick={oauthLogin} />
                 <WechatOutlined className="login-icon" />
                 <QqOutlined className="login-icon" />
               </span>
@@ -257,5 +300,6 @@ function LoginForm(props) {
 export default withRouter(
   connect(null, {
     login,
+    mobilelogin,
   })(LoginForm)
 );

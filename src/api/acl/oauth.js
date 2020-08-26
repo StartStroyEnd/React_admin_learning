@@ -17,3 +17,13 @@ export function reqGetVerifyCode(mobile) {
 // 手机号登录
 // http://localhost:5000/oauth/mobile
 //
+export function mobileLogin(mobile, code) {
+  return request({
+    url: `${BASE_URL}/mobile`,
+    method: "POST",
+    data: {
+      mobile,
+      code,
+    },
+  });
+}
