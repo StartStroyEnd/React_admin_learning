@@ -2,14 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { getUserInfo, getUserMenu } from "./redux";
 
-@connect(
-  (state) => (
-    {
-      user: state.user,
-    },
-    { getUserInfo, getUserMenu }
-  )
-)
+@connect((state) => ({ user: state.user }), { getUserInfo, getUserMenu })
 class Authorized extends Component {
   async componentDidMount() {
     // 挂载后发送请求

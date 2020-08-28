@@ -36,6 +36,7 @@ dayjs.extend(relativeTime);
     // )
 
     chapterList: state.chapterList.chapterList,
+    permissionValueList: state.user.permissionValueList,
   }),
   { getLessonList, delChapterList, delLessonList }
   // { getcourseList }
@@ -160,6 +161,11 @@ class Chapter extends Component {
   render() {
     const { previewVisible, previewImage, selectedRowKeys } = this.state;
 
+    // 获取当前权限按钮数据
+    const permissionValueList = this.props.permissionValueList;
+    // 匹配当前后台permissionValueList数据中是否存在某个权限二级菜单下的按钮权限是否存在该字符
+    const index = permissionValueList.indexOf("chapter.addlesson");
+
     const columns = [
       {
         title: "章节名称",
@@ -195,12 +201,14 @@ class Chapter extends Component {
           // if ("free" in data) {
           return (
             <div>
-              <Tooltip title="新增课时">
-                {/* 这里的data就包含了当前项的id */}
-                <Button type="primary" onClick={this.addLessonHandle(data)}>
-                  <PlusOutlined />
-                </Button>
-              </Tooltip>
+              {index > -1 && (
+                <Tooltip title="新增课时">
+                  {/* 这里的data就包含了当前项的id */}
+                  <Button type="primary" onClick={this.addLessonHandle(data)}>
+                    <PlusOutlined />
+                  </Button>
+                </Tooltip>
+              )}
               <Tooltip title="更新章节">
                 <Button type="primary" style={{ margin: "0 10px" }}>
                   <FormOutlined />
